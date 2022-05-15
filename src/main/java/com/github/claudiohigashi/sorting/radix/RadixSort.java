@@ -26,19 +26,19 @@ public class RadixSort {
         }
         for (int d = 0; d < 10; d++) { // maximum integer is 2,147,483,647 (max 10 digits)
             List<Integer>[] buckets = createEmptyBuckets();
-            boolean allDigitsAreZero = true;
+            boolean lastDigit = true;
             for (int i = 0; i < a.length; i++) {
                 int number = a[i];
                 int digit = getCurrentDigit(number, d);
-                if (digit != 0) {
-                    allDigitsAreZero = false;
+                if (lastDigit && getNextDigit(number, d) != 0) {
+                    lastDigit = false;
                 }
                 buckets[digit].add(number);
             }
-            if (allDigitsAreZero) {
+            copyBucketsBackToNumbersArray(buckets, a);
+            if (lastDigit) {
                 break;
             }
-            copyBucketsBackToNumbersArray(buckets, a);
         }
     }
 
@@ -50,6 +50,13 @@ public class RadixSort {
                 numbers[j++] = number;
             }
         }
+    }
+
+    private static int getNextDigit(int number, int power) {
+        if (power > 8) {
+            return 0;
+        }
+        return getCurrentDigit(number, power + 1);
     }
 
     private static int getCurrentDigit(int number, int power) {
