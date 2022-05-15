@@ -7,94 +7,61 @@ import java.util.List;
  * This implementation uses Radix sort algorithm to sort an array of positive integers
  */
 public class RadixSort {
-
-    private static final String[] ZEROS_TABLE = new String[]{
-            "",
-            "0",
-            "00",
-            "000",
-            "0000",
-            "00000",
-            "000000",
-            "0000000",
-            "00000000",
-            "000000000",
-            "0000000000"
+    private static final int[] POWER_OF_10 = new int[]{
+            1,
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            1000000,
+            10000000,
+            100000000,
+            1000000000
     };
 
     public static void sort(int[] a) {
         if (a == null || a.length == 0) {
             return; // empty array (there is nothing to sort)
         }
-        String[] numbers = createStringArrayFromIntArray(a);
-        int digits = numbers[0].length();
-        for (int d = digits - 1; d >= 0; d--) {
-            List<String>[] buckets = createEmptyBuckets();
-            for (int i = 0; i < numbers.length; i++) {
-                String number = numbers[i];
-                int digit = getCurrentDigit(number.charAt(d));
+        for (int d = 0; d < 10; d++) { // maximum integer is 2,147,483,647 (max 10 digits)
+            List<Integer>[] buckets = createEmptyBuckets();
+            boolean allDigitsAreZero = true;
+            for (int i = 0; i < a.length; i++) {
+                int number = a[i];
+                int digit = getCurrentDigit(number, d);
+                if (digit != 0) {
+                    allDigitsAreZero = false;
+                }
                 buckets[digit].add(number);
             }
-            copyBucketsBackToNumbersArray(buckets, numbers);
-        }
-        copyNumbersBackToIntArray(numbers, a);
-    }
-
-    private static void copyNumbersBackToIntArray(String[] numbers, int[] a) {
-        for (int i = 0; i < numbers.length; i++) {
-            a[i] = Integer.parseInt(numbers[i]);
+            if (allDigitsAreZero) {
+                break;
+            }
+            copyBucketsBackToNumbersArray(buckets, a);
         }
     }
 
-    private static void copyBucketsBackToNumbersArray(List<String>[] buckets, String[] numbers) {
+    private static void copyBucketsBackToNumbersArray(List<Integer>[] buckets, int[] numbers) {
         int j = 0;
         for (int i = 0; i < buckets.length; i++) {
-            List<String> bucket = buckets[i];
-            for (String number : bucket) {
+            List<Integer> bucket = buckets[i];
+            for (Integer number : bucket) {
                 numbers[j++] = number;
             }
         }
     }
 
-    private static int getCurrentDigit(char c) {
-        return c - '0';
+    private static int getCurrentDigit(int number, int power) {
+        return (power < 9 ? number % POWER_OF_10[power + 1] : number) / POWER_OF_10[power];
     }
 
-    private static List<String>[] createEmptyBuckets() {
-        List<String>[] buckets = new List[10];
+    private static List<Integer>[] createEmptyBuckets() {
+        List<Integer>[] buckets = new List[10];
         for (int i = 0; i < buckets.length; i++) {
             buckets[i] = new LinkedList<>();
         }
         return buckets;
-    }
-
-    private static String[] createStringArrayFromIntArray(int[] a) {
-        String[] strings = new String[a.length];
-
-        // Convert int to String and verify the maximum length (number of digits in a number)
-        int maxLength = 0;
-        for (int i = 0; i < strings.length; i++) {
-            String strNumber = Integer.toString(a[i]);
-            strings[i] = strNumber;
-            if (strNumber.length() > maxLength) {
-                maxLength = strNumber.length();
-            }
-        }
-
-        // Complete numbers with leading zeros
-        for (int i = 0; i < strings.length; i++) {
-            strings[i] = completeLeadingZeros(strings[i], maxLength);
-        }
-
-        return strings;
-    }
-
-    private static String completeLeadingZeros(String string, int maxLength) {
-        int leadingZeros = maxLength - string.length();
-        if (leadingZeros <= 0) {
-            return string;
-        }
-        return ZEROS_TABLE[leadingZeros] + string;
     }
 
 }
